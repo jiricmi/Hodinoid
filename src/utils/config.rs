@@ -1,7 +1,5 @@
-use super::files::read_input;
-use super::files::save_file;
-use serde::Deserialize;
-use serde::Serialize;
+use super::files::{read_input, save_file, read_file};
+use serde::{Deserialize, Serialize};
 use std::panic::panic_any;
 
 pub const CONFIG_NAME: &str = "hodinoid_config.toml";
@@ -9,7 +7,7 @@ pub const CONFIG_NAME: &str = "hodinoid_config.toml";
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
     pub person: Person,
-    location: Location,
+    pub location: Location,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -33,9 +31,21 @@ struct Address {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct Location {
-    root: String,
+pub struct Location {
+    pub root: String,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CompanyConfig {
+    pub company_info: CompanyInfo,
+    pub company_address: Address
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CompanyInfo {
+    pub name: String
+}
+
 
 pub fn config_cli_first_setup() -> Config {
     let person = get_input_person();
@@ -87,4 +97,10 @@ fn get_input_person() -> Person {
 fn get_input_location() -> Location {
     let root = read_input("Enter path to location: ");
     return Location { root };
+}
+
+pub fn load_company_config(path: &str) -> Result<CompanyConfig, Box<dyn std::error::Error>> {
+    let config_string = read_file(path)?;
+    let config: CompanyConfig = toml::from_str(&config_string)?;
+    Ok(config)
 }

@@ -1,6 +1,7 @@
-use std::fs::write;
-use std::fs::File;
+use std::fs::{write, File, create_dir_all};
 use std::io::{self, Read, Write};
+use std::path::Path;
+use std::io::Result;
 
 pub fn read_file(filename: &str) -> io::Result<String> {
     let mut file = File::open(filename)?;
@@ -27,4 +28,14 @@ pub fn read_input(prompt: &str) -> String {
         .expect("Failed to read line");
 
     return input.trim().to_string();
+}
+
+pub fn ensure_path<P: AsRef<Path>>(path: P) -> Result<()> {
+    if !path.as_ref().exists() {
+        create_dir_all(path.as_ref())?;
+        println!("Created directories {:?}", path.as_ref());
+    } else {
+        println!("Directories {:?} already exists", path.as_ref());
+    }
+    Ok(())
 }
