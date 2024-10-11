@@ -1,6 +1,10 @@
 mod utils;
+mod data_operations;
+mod display_state_machine;
+use utils::config::{Config, CONFIG_NAME};
+use utils::files::ensure_path;
 
-fn setup(config_name: &str) -> utils::config::Config {
+fn setup_config(config_name: &str) -> Config {
     match utils::files::read_file(config_name) {
         Ok(config_string) => match toml::from_str(&config_string) {
             Ok(config) => return config,
@@ -17,9 +21,11 @@ fn setup(config_name: &str) -> utils::config::Config {
 }
 
 fn main() {
-    let config = setup(utils::config::CONFIG_NAME);
+    let config = setup_config(CONFIG_NAME);
+    ensure_path(&config.location.root).expect("Cannot create path to the files!");
     println!(
         "Welcome back, {} {}!",
         config.person.first_name, config.person.last_name
-    )
+    );
+    display_state_machine::main_menu_cli(&config);
 }
