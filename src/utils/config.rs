@@ -1,4 +1,4 @@
-use super::files::{read_input, save_file, read_file};
+use super::files::{read_file, read_input, save_file};
 use serde::{Deserialize, Serialize};
 use std::panic::panic_any;
 
@@ -22,7 +22,7 @@ pub struct Person {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct Address {
+pub struct Address {
     city: String,
     street: String,
     building_number: String,
@@ -38,14 +38,13 @@ pub struct Location {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CompanyConfig {
     pub company_info: CompanyInfo,
-    pub company_address: Address
+    pub company_address: Address,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CompanyInfo {
-    pub name: String
+    pub name: String,
 }
-
 
 pub fn config_cli_first_setup() -> Config {
     let person = get_input_person();
@@ -101,6 +100,6 @@ fn get_input_location() -> Location {
 
 pub fn load_company_config(path: &str) -> Result<CompanyConfig, Box<dyn std::error::Error>> {
     let config_string = read_file(path)?;
-    let config: CompanyConfig = toml::from_str(&config_string)?;
+    let config: CompanyConfig = toml::from_str(&config_string).expect("pes");
     Ok(config)
 }
