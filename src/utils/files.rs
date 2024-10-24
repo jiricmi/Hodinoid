@@ -1,7 +1,7 @@
-use std::fs::{write, File, create_dir_all};
+use std::fs::{create_dir_all, write, File};
+use std::io::Result;
 use std::io::{self, Read, Write};
 use std::path::Path;
-use std::io::Result;
 
 pub fn read_file(filename: &str) -> io::Result<String> {
     let mut file = File::open(filename)?;
