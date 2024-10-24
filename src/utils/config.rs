@@ -69,13 +69,7 @@ fn get_input_person() -> Person {
     let dic = read_input("Enter DIC: ");
     let email = read_input("Enter email: ");
     let phone = read_input("Enter phone: ");
-
-    let city = read_input("Enter city: ");
-    let street = read_input("Enter street: ");
-    let building_number = read_input("Enter building number: ");
-    let post_code = read_input("Enter post code: ");
-    let state = read_input("Enter state: ");
-
+    let address = get_input_address();
     return Person {
         first_name,
         last_name,
@@ -83,13 +77,29 @@ fn get_input_person() -> Person {
         dic,
         email,
         phone,
-        address: Address {
-            city,
-            street,
-            building_number,
-            post_code,
-            state,
-        },
+        address,
+    };
+}
+
+pub fn get_input_company_info() -> CompanyInfo {
+    let name = read_input("Enter company name: ");
+
+    return CompanyInfo { name };
+}
+
+pub fn get_input_address() -> Address {
+    let city = read_input("Enter city: ");
+    let street = read_input("Enter street: ");
+    let building_number = read_input("Enter building number: ");
+    let post_code = read_input("Enter post code: ");
+    let state = read_input("Enter state: ");
+
+    return Address {
+        city,
+        street,
+        building_number,
+        post_code,
+        state,
     };
 }
 
