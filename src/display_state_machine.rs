@@ -1,4 +1,4 @@
-use super::data_operations::load_companies;
+use super::data_operations::{create_company, load_companies};
 use super::utils::config::Config;
 use std::io::{self, Write};
 
@@ -62,7 +62,7 @@ fn company_cli(config: &Config) {
 
         match get_input_int_wrapper() {
             1 => {
-                println!("You selected Option 1");
+                create_company(&config.location.root);
             }
             2 => {
                 println!("You selected {}", companies[0].1);

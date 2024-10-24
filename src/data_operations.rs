@@ -1,4 +1,7 @@
-use super::utils::config::load_company_config;
+use crate::utils::config::{
+    get_input_address, get_input_company_info, load_company_config, CompanyConfig,
+};
+use crate::utils::files::{ensure_path, save_file};
 use std::fs::read_dir;
 use std::io::Result;
 
@@ -36,5 +39,39 @@ fn get_company_name(company_path: &str, company_id: i32) -> String {
             println!("Cannot find company config");
             return "".to_string();
         }
+    }
+}
+
+pub fn create_company(root_path: &str) {
+    let companies = load_companies(&root_path).expect("Cannot load companies");
+    let mut id = 0;
+    loop {
+        let mut flag = false;
+        for (company_id, _) in &companies {
+            if *company_id == id {
+                flag = true;
+                break;
+            }
+        }
+        if !flag {
+            break;
+        }
+        id += 1;
+    }
+
+    let company_info = get_input_company_info();
+    let company_address = get_input_address();
+    let company_config = CompanyConfig {
+        company_info,
+        company_address,
+    };
+
+    let company_path = format!("{}/{}", root_path, id.to_string());
+    ensure_path(&company_path).expect("Should ensure");
+
+    let config_file = format!("{}/{}", company_path, COMPANY_CONFIG_NAME);
+    match toml::to_string(&company_config) {
+        Ok(company_string) => save_file(&config_file, company_string),
+        Err(_) => println!("Cannot create company!"),
     }
 }
