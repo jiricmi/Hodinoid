@@ -1,8 +1,11 @@
 use super::files::{read_file, read_input, save_file};
+use crate::utils::files::{get_config_dir, APP_DIR_NAME};
 use serde::{Deserialize, Serialize};
+use std::fs::create_dir_all;
 use std::panic::panic_any;
+use std::path::PathBuf;
 
-pub const CONFIG_NAME: &str = "hodinoid_config.toml";
+const CONFIG_NAME: &str = "config.toml";
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
@@ -46,13 +49,27 @@ pub struct CompanyInfo {
     pub name: String,
 }
 
+fn get_app_config_dir() -> PathBuf {
+    get_config_dir().join(APP_DIR_NAME)
+}
+
+pub fn get_config_path() -> PathBuf {
+    get_app_config_dir().join(CONFIG_NAME)
+}
+
 pub fn config_cli_first_setup() -> Config {
+    let config_dir = get_app_config_dir();
+
+    if !config_dir.exists() {
+        create_dir_all(config_dir).expect("Cannot be created dir!");
+    }
+
     let person = get_input_person();
     let location = get_input_location();
 
     let config = Config { person, location };
     match toml::to_string(&config) {
-        Ok(config_str) => save_file(CONFIG_NAME, config_str),
+        Ok(config_str) => save_file(get_config_path(), config_str),
         Err(e) => {
             println!("Error while parsing");
             panic_any(e);
@@ -104,7 +121,14 @@ pub fn get_input_address() -> Address {
 }
 
 fn get_input_location() -> Location {
-    let root = read_input("Enter path to location: ");
+    let config_dir = get_app_config_dir();
+    let data_dir = config_dir.join("data");
+
+    if !data_dir.exists() {
+        create_dir_all(&data_dir).expect("Cannot be created dir");
+    }
+
+    let root = data_dir.to_string_lossy().to_string();
     return Location { root };
 }
 
