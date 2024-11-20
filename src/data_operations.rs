@@ -1,8 +1,8 @@
 use crate::utils::config::{
-    create_contract_config, get_input_address, get_input_company_info, load_company_config,
-    CompanyConfig, ContractFile,
+    create_contract_config, get_input_address, get_input_company_info, get_time_contract_record,
+    load_company_config, CompanyConfig, ContractFile,
 };
-use crate::utils::files::{ensure_path, save_file};
+use crate::utils::files::{ensure_path, read_file, save_file};
 use serde_json;
 use std::fs::read_dir;
 use std::fs::read_to_string;
@@ -127,5 +127,23 @@ pub fn create_contract(company_path: &str) {
     match serde_json::to_string(&contract_config) {
         Ok(contract_string) => save_file(&contract_path, contract_string),
         Err(_) => println!("Cannot create contract!"),
+    }
+}
+
+pub fn load_contract_content(company_path: &str, contract_id: i32) -> ContractFile {
+    let contract_path = format!("{}/{}.json", company_path, contract_id.to_string());
+    let content = read_file(&contract_path).expect("Cannot read file");
+
+    let contract_file: ContractFile = serde_json::from_str(&content).expect("Cannot parse json");
+    return contract_file;
+}
+
+pub fn create_time_record(contract_file: &mut ContractFile, contract_path: &str) {
+    let time_record = get_time_contract_record();
+    contract_file.report_time.push(time_record);
+
+    match serde_json::to_string(&contract_file) {
+        Ok(contract_string) => save_file(&contract_path, contract_string),
+        Err(_) => println!("Cannot rewrite contract"),
     }
 }

@@ -1,5 +1,7 @@
 use super::files::{read_file, read_input, save_file};
 use crate::utils::files::{get_config_dir, APP_DIR_NAME};
+use chrono::Local;
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::fs::create_dir_all;
 use std::panic::panic_any;
@@ -57,12 +59,12 @@ pub struct ContractInfo {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct ContractReportTime {
-    description: String,
-    date: String,
-    from: String,
-    to: String,
-    location: String,
+pub struct ContractReportTime {
+    pub description: String,
+    pub date: String,
+    pub from: String,
+    pub to: String,
+    pub location: String,
     note: String,
 }
 
@@ -191,4 +193,56 @@ pub fn create_contract_config() -> ContractFile {
         report_time,
         report_non_time,
     };
+}
+
+fn validate_date(date_str: &str) -> bool {
+    let re = Regex::new(r"^\d{2}\.\d{2}\.\d{4}$").unwrap();
+    re.is_match(date_str)
+}
+
+fn validate_time(time_str: &str) -> bool {
+    let re = Regex::new(r"^\d{2}:\d{2}$").unwrap();
+    re.is_match(time_str)
+}
+
+fn validate_location(location: &str) -> bool {
+    location == "HO" || location == "Office" || location.is_empty()
+}
+
+pub fn get_time_contract_record() -> ContractReportTime {
+    let mut date = read_input("Enter date dd.mm.yyyy (leave blank for today): ");
+    let description = read_input("Enter description of the job: ");
+    let from = read_input("From hh:mm format: ");
+    let to = read_input("To hh:mm format: ");
+    let location = read_input("HO/Office (leave blank for Office)");
+    let note = read_input("Add note: ");
+
+    if date.is_empty() {
+        date = Local::now().format("%d.%m.%Y").to_string();
+    }
+
+    if !date.is_empty() && !validate_date(&date) {
+        println!("Invalid date format. Please use dd.mm.yyyy.");
+    }
+
+    if !validate_time(&from) {
+        println!("Invalid 'From' time format. Please use hh:mm.");
+    }
+
+    if !validate_time(&to) {
+        println!("Invalid 'To' time format. Please use hh:mm.");
+    }
+
+    if !validate_location(&location) {
+        println!("Invalid location. Please enter 'HO' or 'Office'.");
+    }
+
+    ContractReportTime {
+        description,
+        date,
+        from,
+        to,
+        location,
+        note,
+    }
 }
