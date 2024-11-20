@@ -1,4 +1,4 @@
-use super::data_operations::{create_company, load_companies};
+use super::data_operations::{create_company, create_contract, load_companies, load_contracts};
 use super::utils::config::Config;
 use std::io::{self, Write};
 
@@ -58,21 +58,50 @@ fn company_cli(config: &Config) {
             println!("{}. {}", number_company, name)
         }
 
-        println!("0. Exit company");
+        println!("0. Exit company list");
 
-        match get_input_int_wrapper() {
-            1 => {
-                create_company(&config.location.root);
-            }
-            2 => {
-                println!("You selected {}", companies[0].1);
-            }
-            0 => {
-                break;
-            }
-            _ => {
-                println!("Invalid choice, please try again.");
-            }
+        let selected_num = get_input_int_wrapper();
+
+        if selected_num == 1 {
+            create_company(&config.location.root);
+        } else if selected_num == 0 {
+            break;
+        } else if selected_num as usize <= companies.len() + 1 {
+            println!("You selected {}", companies[(selected_num - 2) as usize].1);
+            contract_cli(&config, companies[(selected_num - 2) as usize].clone())
+        } else {
+            println!("Invalid choice, please try again.");
+        }
+    }
+}
+
+fn contract_cli(config: &Config, company_tuple: (i32, String)) {
+    loop {
+        separator();
+        println!("1. Add contract");
+        let company_path = format!("{}/{}", &config.location.root, company_tuple.0);
+
+        let contracts = load_contracts(&company_path).expect("Failed");
+
+        for (index, value) in contracts.iter().enumerate() {
+            let number_contract = index + 2;
+            let (_, name) = value;
+            println!("{}. {}", number_contract, name)
+        }
+
+        println!("0. Exit contracts");
+
+        let selected_num = get_input_int_wrapper();
+
+        if selected_num == 1 {
+            create_contract(&company_path);
+        } else if selected_num == 0 {
+            break;
+        } else if selected_num as usize <= contracts.len() + 1 {
+            println!("You selected {}", contracts[(selected_num - 2) as usize].1);
+            contract_cli(&config, contracts[(selected_num - 2) as usize].clone())
+        } else {
+            println!("Invalid choice, please try again.");
         }
     }
 }

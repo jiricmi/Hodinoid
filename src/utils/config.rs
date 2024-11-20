@@ -49,6 +49,38 @@ pub struct CompanyInfo {
     pub name: String,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ContractInfo {
+    pub name: String,
+    pub hour_pay: u32,
+    pub note: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct ContractReportTime {
+    description: String,
+    date: String,
+    from: String,
+    to: String,
+    location: String,
+    note: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct ContractReportNonTime {
+    description: String,
+    date: String,
+    value: i32,
+    note: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ContractFile {
+    pub info: ContractInfo,
+    pub report_time: Vec<ContractReportTime>, // Dynamické pole
+    pub report_non_time: Vec<ContractReportNonTime>, // Dynamické pole
+}
+
 fn get_app_config_dir() -> PathBuf {
     get_config_dir().join(APP_DIR_NAME)
 }
@@ -136,4 +168,27 @@ pub fn load_company_config(path: &str) -> Result<CompanyConfig, Box<dyn std::err
     let config_string = read_file(path)?;
     let config: CompanyConfig = toml::from_str(&config_string).expect("pes");
     Ok(config)
+}
+
+pub fn create_contract_config() -> ContractFile {
+    let name = read_input("Enter contract name: ");
+    let hour_pay: u32 = read_input("Enter hour pay number: ")
+        .parse()
+        .expect("Cannot parse pay to int");
+    let note = read_input("Enter note: ");
+
+    let info = ContractInfo {
+        name,
+        hour_pay,
+        note,
+    };
+
+    let report_time: Vec<ContractReportTime> = vec![];
+    let report_non_time: Vec<ContractReportNonTime> = vec![];
+
+    return ContractFile {
+        info,
+        report_time,
+        report_non_time,
+    };
 }

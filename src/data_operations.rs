@@ -1,8 +1,11 @@
 use crate::utils::config::{
-    get_input_address, get_input_company_info, load_company_config, CompanyConfig,
+    create_contract_config, get_input_address, get_input_company_info, load_company_config,
+    CompanyConfig, ContractFile,
 };
 use crate::utils::files::{ensure_path, save_file};
+use serde_json;
 use std::fs::read_dir;
+use std::fs::read_to_string;
 use std::io::Result;
 
 const COMPANY_CONFIG_NAME: &str = "config.toml";
@@ -73,5 +76,56 @@ pub fn create_company(root_path: &str) {
     match toml::to_string(&company_config) {
         Ok(company_string) => save_file(&config_file, company_string),
         Err(_) => println!("Cannot create company!"),
+    }
+}
+
+pub fn load_contracts(path: &str) -> Result<Vec<(i32, String)>> {
+    let mut contracts = Vec::new();
+
+    let entries = read_dir(path)?;
+
+    for entry in entries {
+        let entry_path = entry?.path();
+
+        if !entry_path.is_dir() && entry_path.extension().map_or(false, |ext| ext == "json") {
+            if let Some(file_name) = entry_path.file_stem() {
+                let content = read_to_string(&entry_path)?;
+
+                let contract_data: ContractFile = serde_json::from_str(&content)?;
+                let contract_id_str = file_name.to_str().unwrap();
+                let contract_id: i32 = contract_id_str.parse().expect("cannto parse id");
+                let contract_name = contract_data.info.name;
+                contracts.push((contract_id, contract_name));
+            }
+        }
+    }
+
+    Ok(contracts)
+}
+
+pub fn create_contract(company_path: &str) {
+    let contracts = load_contracts(&company_path).expect("Cannot load contracts");
+    let mut id = 0;
+    loop {
+        let mut flag = false;
+        for (contract_id, _) in &contracts {
+            if *contract_id == id {
+                flag = true;
+                break;
+            }
+        }
+        if !flag {
+            break;
+        }
+        id += 1;
+    }
+
+    let contract_config = create_contract_config();
+
+    let contract_path = format!("{}/{}.json", company_path, id.to_string());
+
+    match serde_json::to_string(&contract_config) {
+        Ok(contract_string) => save_file(&contract_path, contract_string),
+        Err(_) => println!("Cannot create contract!"),
     }
 }
